@@ -9,16 +9,16 @@ class book
         book::$connection = $newConnection;
     }
 
-    private $id;
-    private $name;
-    private $autor;
-    private $opis;
+    protected $id;
+    protected $name;
+    protected $autor;
+    protected $opis;
 
     public function __construct($newid, $newname, $newautor, $newopis)
     {
         $this->id = intval($newid) - 1;
-        $this->name = $newname;
-        $this->autor = $newautor;
+        $this->setname = $newname;
+        $this->setautor = $newautor;
         $this->setopis($newopis);
     }
 
@@ -63,12 +63,15 @@ class book
         }
     }
 
-    public function loadFromDB($id)
+    public function loadFromDB($id = null)
     {
-
+        if (is_null($id)) {
+            $sql = "SELECT * FROM book ORDER BY post_d desc";
+        } else {
+            $sql = "SELECT * FROM book WHERE book_id='$id' ORDER BY post_d desc";
+        }
 
         $ret = [];
-        $sql = "SELECT * FROM book WHERE id='$id' ORDER BY post_d desc";
         $result = self::$connection->query($sql);
         if ($result !== false) {
             while ($row = $result->fetch_assoc()) {
@@ -80,6 +83,36 @@ class book
         return $ret;
     }
 
-    
+    public function Createbook( $name, $autor, $opis)
+    {
+        $sql = "INSERT INTO book($this->name, $this->autor, $this->opis)
+                VALUE ($name,$autor,$opis)";
+        $result = self::$connection->query($sql);
+        if ($result === TRUE) {
+            $newbook = new book (self::$connection->insert_id, $name, $autor, $opis);
+            return $newbook;
+        }
+
+        return false;
+    }
+
+    public function UpDateBook($conn, $newname, $newautor, $newopis)
+    {
+
+        $request ="UPDATE book SET name=$newname OR autor=$newautor OR opis=$newopis WHERE id=$this->id";
+        $requestResult=$conn->query($request);
+        return $requestResult;
+
+    }
+
+    public function DelteFromDB($conn,$id)
+    {
+        $request ="DELETE * FROM book WHERE  id=$id";
+        $requestResult=$conn->query($request);
+        return $requestResult;
+    }
+
+
+
 
 }
